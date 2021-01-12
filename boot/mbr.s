@@ -7,6 +7,8 @@ SECTION MBR vstart=0x7c00
 	mov ss, ax
 	mov fs, ax
 	mov sp, 0x7c00
+	mov ax, 0xb800
+	mov gs, ax
 
 ; 利用0x06功能，上卷全部行，进行清屏
 ; INT 0x10 功能号：0x06 功能描述：上卷窗口
@@ -24,31 +26,21 @@ SECTION MBR vstart=0x7c00
 	; VGA 模式下一行只能容纳80个字符 共25行
 	int 0x10
 
-;;;;;;;;　 　 下面这三行代码获取光标位置 　 　;;;;;;;;;
-;. get_cursor 获取 当前 光标 位置, 在 光标 位置 处 打印 字符｡ 
-	mov ah, 3
-; 输入: 3 号子 功能 是 获取 光标 位置, 需要 存入 ah 寄存器
-	mov bh, 0
-; bh 寄存器 存储 的 是 待 获取 光标 的 页号 　 　 
-	int 0x10
-; 输出: 
-; 	ch=光标开始行, cl=光标结束行
-; 	dh=光标所在行号, dl=光标所在列号
-;;;;;;;;;　 　 获取光标位置结束 　 　;;;;;;;;;;;;;;;;
 
-;;;;;;;;; 		打印字符串
-; 仍然是0x10中断，调用13号子功能
-	mov ax, message
-	mov bp, ax 				; ex:bp是串首地址
-							; 开头已经为sreg初始化
-; 光标位置要用到dx寄存器中的内容，cx中的光标s位置可以忽略
-	mov cx, 5 				; cx为串长度，不包括结束符0的字符个数
-	mov ax, 0x1301 			; 子功能号13显示字符及属性 存入ah寄存器，al设置写字符方式al=1:显示字符串，光标跟随移动
-	mov bx, 0x2 			; bh存储要显示的页号，这里是0
-							; bl是字符属性，属性黑底绿字bl=02h
-	int 0x10
+	mov byte [gs: 0x00], 'U'
+	mov byte [gs: 0x01], 0xA4 	; A表示绿色背景闪烁，4表示前景色红色
 
-;;;;;;;;; 		打印字符串结束
+
+	mov byte [gs: 0x02], 'N'
+	mov byte [gs: 0x03], 0xA4
+
+	mov byte [gs: 0x04], 'O'	
+	mov byte [gs: 0x05], 0xA4
+
+	mov byte [gs: 0x06], 'S'
+	mov byte [gs: 0x07], 0xA4
+
+
 
 	jmp $ 					; 使程序死循环
 
